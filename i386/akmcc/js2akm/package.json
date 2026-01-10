@@ -1,0 +1,34 @@
+{
+  "name": "akmcc",
+  "version": "2.0.0",
+  "description": "aOS Kernel Module Compiler - Compile JavaScript to .akm kernel modules",
+  "main": "src/compiler.js",
+  "bin": {
+    "akmcc": "./bin/akmcc.js"
+  },
+  "scripts": {
+    "build": "node bin/akmcc.js",
+    "lint": "eslint src/ bin/",
+  },
+  "keywords": [
+    "aos",
+    "kernel",
+    "module",
+    "compiler",
+    "akm",
+    "javascript",
+    "os-development"
+  ],
+  "author": "Aarav Mehta",
+  "license": "CC-BY-NC-4.0",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "acorn": "^8.11.0",
+    "escodegen": "^2.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0"
+  }
+}
