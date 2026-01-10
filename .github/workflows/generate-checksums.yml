@@ -40,7 +40,7 @@ jobs:
           generate_checksums() {
             local dir="$1"
             local json_file="${dir}/keys.json"
-            
+            local txt_file="${dir}/keys.txt"
             # Skip if directory doesn't exist
             if [ ! -d "$dir" ]; then
               return
