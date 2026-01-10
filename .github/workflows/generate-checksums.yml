@@ -32,12 +32,12 @@ jobs:
       
       - name: Generate SHA256 checksums
         run: |
+          set -euo pipefail
           echo "Starting checksum generation..."
           
           # Function to generate checksums for a directory
           generate_checksums() {
             local dir="$1"
-            local txt_file="${dir}/keys.txt"
             local json_file="${dir}/keys.json"
             
             # Skip if directory doesn't exist
