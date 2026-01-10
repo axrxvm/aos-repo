@@ -1,0 +1,23 @@
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Build artifacts
+*.o
+*.so
+*.a
+*.pyc
+__pycache__/
+
+# Testing
+test-*/
+*-test/

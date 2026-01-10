@@ -1,0 +1,5 @@
+# SHA256 Checksums for iso
+# Generated on: 2026-01-10 02:51:29 UTC
+
+8d270ee534d0cc4d266561a44bd22da832d6195af3f379d698b8148f85304bfd  aos-i386.iso
+1020bfeb0d311925e5d872784d7ba6ad017de046332f7c51d84a7d6a97caddc1  checksums.txt
