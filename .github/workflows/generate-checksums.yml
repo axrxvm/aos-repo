@@ -40,15 +40,17 @@ jobs:
             local txt_file="${dir}/keys.txt"
             local json_file="${dir}/keys.json"
             
-            # Skip if directory doesn't exist or is empty (except for README, keys.txt, keys.json)
+            # Skip if directory doesn't exist
             if [ ! -d "$dir" ]; then
               return
             fi
             
-            # Count files (excluding README.md, keys.txt, and keys.json)
-            file_count=$(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | wc -l)
+            # Get list of files to checksum (excluding README.md, keys.txt, and keys.json)
+            local file_list
+            file_list=$(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | sort)
             
-            if [ "$file_count" -eq 0 ]; then
+            # Skip if no files to checksum
+            if [ -z "$file_list" ]; then
               echo "Skipping $dir (no files to checksum)"
               return
             fi
@@ -63,9 +65,9 @@ jobs:
             echo "# Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$txt_file"
             echo "" >> "$txt_file"
             
-            # Collect all files and their checksums first
-            declare -a files
-            declare -a checksums
+            # Collect all files and their checksums
+            files=()
+            checksums=()
             
             while IFS= read -r file; do
               if [ -f "$file" ]; then
@@ -76,7 +78,7 @@ jobs:
                 # Add to keys.txt
                 echo "$checksum  $filename" >> "$txt_file"
               fi
-            done < <(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | sort)
+            done <<< "$file_list"
             
             # Generate keys.json (JSON format)
             echo "{" > "$json_file"
