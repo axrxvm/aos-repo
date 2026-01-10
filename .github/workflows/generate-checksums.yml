@@ -61,7 +61,7 @@ jobs:
             rm -f "$txt_file" "$json_file"
             
             # Generate keys.txt (plain text format)
-            echo "# SHA256 Checksums for $(basename $dir)" > "$txt_file"
+            echo "# SHA256 Checksums for $(basename "$dir")" > "$txt_file"
             echo "# Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$txt_file"
             echo "" >> "$txt_file"
             
