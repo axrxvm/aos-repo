@@ -19,7 +19,7 @@ The repository is organized by architecture and category:
 
 ### Categories
 - **iso** - ISO installation images (no subdirectories, files stored directly)
-- **akmcc** - AOS Kernel Module Compiler Collection packages
+- **akmcc** - aOS Kernel Module Compiler Collection packages
 - **kmodule** - Kernel modules
 - **pkgs** - Software packages
 - **etc** - Configuration files and miscellaneous items
