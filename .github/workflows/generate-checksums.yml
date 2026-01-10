@@ -1,0 +1,142 @@
+name: Generate SHA256 Checksums
+
+on:
+  push:
+    branches:
+      - main
+      - 'releases/**'
+    paths:
+      - 'i386/**'
+      - 'x86_64/**'
+      - '!i386/README.md'
+      - '!x86_64/README.md'
+      - '!i386/*/README.md'
+      - '!x86_64/*/README.md'
+      - '!i386/**/keys.txt'
+      - '!x86_64/**/keys.txt'
+      - '!i386/**/keys.json'
+      - '!x86_64/**/keys.json'
+  workflow_dispatch:
+
+jobs:
+  generate-checksums:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate SHA256 checksums
+        run: |
+          echo "Starting checksum generation..."
+          
+          # Function to generate checksums for a directory
+          generate_checksums() {
+            local dir="$1"
+            local txt_file="${dir}/keys.txt"
+            local json_file="${dir}/keys.json"
+            
+            # Skip if directory doesn't exist or is empty (except for README, keys.txt, keys.json)
+            if [ ! -d "$dir" ]; then
+              return
+            fi
+            
+            # Count files (excluding README.md, keys.txt, and keys.json)
+            file_count=$(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | wc -l)
+            
+            if [ "$file_count" -eq 0 ]; then
+              echo "Skipping $dir (no files to checksum)"
+              return
+            fi
+            
+            echo "Generating checksums for: $dir"
+            
+            # Remove old checksum files
+            rm -f "$txt_file" "$json_file"
+            
+            # Generate keys.txt (plain text format)
+            echo "# SHA256 Checksums for $(basename $dir)" > "$txt_file"
+            echo "# Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$txt_file"
+            echo "" >> "$txt_file"
+            
+            # Collect all files and their checksums first
+            declare -a files
+            declare -a checksums
+            
+            while IFS= read -r file; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                checksum=$(sha256sum "$file" | awk '{print $1}')
+                files+=("$filename")
+                checksums+=("$checksum")
+                # Add to keys.txt
+                echo "$checksum  $filename" >> "$txt_file"
+              fi
+            done < <(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | sort)
+            
+            # Generate keys.json (JSON format)
+            echo "{" > "$json_file"
+            echo "  \"generated\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "$json_file"
+            echo "  \"directory\": \"$dir\"," >> "$json_file"
+            echo "  \"checksums\": {" >> "$json_file"
+            
+            # Add all checksums to JSON
+            for i in "${!files[@]}"; do
+              if [ $i -eq $((${#files[@]} - 1)) ]; then
+                # Last item, no comma
+                echo "    \"${files[$i]}\": \"${checksums[$i]}\"" >> "$json_file"
+              else
+                # Not last item, add comma
+                echo "    \"${files[$i]}\": \"${checksums[$i]}\"," >> "$json_file"
+              fi
+            done
+            
+            echo "  }" >> "$json_file"
+            echo "}" >> "$json_file"
+            
+            echo "✓ Checksums generated for $dir"
+          }
+          
+          # Process all item directories in both architectures
+          # For categories that should have item subdirectories (not iso)
+          for arch in i386 x86_64; do
+            for category in akmcc kmodule pkgs etc tmp; do
+              # Find all item directories (subdirectories of category)
+              if [ -d "$arch/$category" ]; then
+                for item_dir in "$arch/$category"/*; do
+                  if [ -d "$item_dir" ]; then
+                    generate_checksums "$item_dir"
+                  fi
+                done
+              fi
+            done
+            
+            # Special handling for iso category (no subdirectories, files directly in iso/)
+            if [ -d "$arch/iso" ]; then
+              generate_checksums "$arch/iso"
+            fi
+          done
+          
+          echo "Checksum generation completed!"
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push checksums
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git commit -m "Auto-generate SHA256 checksums [skip ci]"
+          git push
