@@ -1,0 +1,17 @@
+{
+  "generated": "2026-01-11T05:11:39.284Z",
+  "modules": [
+    {
+      "folder": "hello",
+      "module": "hello.akm",
+      "sha256": "b9430b477b956ddc22f8a7963567d52e92afb76fd94221bed053a66e5fc2b31e",
+      "metadata": {
+        "name": "hello",
+        "version": "1.0.0",
+        "author": "Aarav Mehta",
+        "description": "Hello World kernel module example",
+        "license": "MIT"
+      }
+    }
+  ]
+}
