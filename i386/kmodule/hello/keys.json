@@ -1,0 +1,8 @@
+{
+  "generated": "2026-01-11T04:32:02Z",
+  "directory": "i386/kmodule/hello",
+  "checksums": {
+    "hello.akm": "b9430b477b956ddc22f8a7963567d52e92afb76fd94221bed053a66e5fc2b31e",
+    "hello.akm.js": "fd13381a5ad75c164ef5af51680932cdf9e44446481d730f0797f3e93ef1f4ca"
+  }
+}
