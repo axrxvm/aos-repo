@@ -1,5 +1,5 @@
 # SHA256 Checksums for iso
-# Generated on: 2026-01-11 04:32:02 UTC
+# Generated on: 2026-01-11 05:08:06 UTC
 
 b81daf5c2d8264348764577defc851eb524f81221b663b531f5585cdc4b5becc  aOS-i386-0.7.3.iso
 9ab07ac07e1dd96ff6c9d5a24f66e3e14cb7aade689bac8c726d95fb78bcd191  aOS-i386-0.8.7.iso
