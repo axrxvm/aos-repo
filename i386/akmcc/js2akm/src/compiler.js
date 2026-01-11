@@ -18,7 +18,7 @@ class AKMCompiler {
             verbose: options.verbose || false,
             capabilities: this.parseCapabilities(options.capabilities),
             apiVersion: 0x0200,  // API version 2.0 (major.minor as uint16)
-            targetKernel: { min: 0x00080000, max: 0 }  // 0.8.0+
+            targetKernel: { min: 0x00000500, max: 0 }  // 0.5.0+ (format: major<<16 | minor<<8 | patch)
         };
 
         this.parser = new AKMParser(this.options);

@@ -299,6 +299,30 @@ class AKMParser {
             // Generate bytecode for function body
             this.generateFunctionIR(func.node, irFunc, addString);
 
+            // If this is the init function, inject command registration calls
+            if (name === 'init' && commands.length > 0) {
+                // Find the return statement and insert before it
+                const returnIdx = irFunc.instructions.findIndex(i => i.op === OPCODES.RET);
+                const insertIdx = returnIdx >= 0 ? returnIdx : irFunc.instructions.length;
+                
+                // Generate registration calls for each command
+                for (const cmd of commands) {
+                    const regCalls = [
+                        // Push arguments: name, syntax, description, category, handler
+                        { op: OPCODES.PUSH_STR, value: cmd.name },
+                        { op: OPCODES.PUSH_STR, value: cmd.syntax },
+                        { op: OPCODES.PUSH_STR, value: cmd.description },
+                        { op: OPCODES.PUSH_STR, value: cmd.category },
+                        { op: OPCODES.PUSH, value: 0 },  // handler offset (placeholder for now)
+                        // Call AKM.registerCommand API
+                        { op: OPCODES.CALL_API, method: 'registerCommand', argc: 5 },
+                        // Pop result
+                        { op: OPCODES.POP }
+                    ];
+                    irFunc.instructions.splice(insertIdx, 0, ...regCalls);
+                }
+            }
+
             ir.functions.push(irFunc);
 
             if (name === 'init') ir.initFunc = irFunc;
@@ -335,12 +359,36 @@ class AKMParser {
                         // AKM API call
                         const method = n.callee.property.name;
                         
-                        // Push arguments
-                        for (let i = n.arguments.length - 1; i >= 0; i--) {
-                            instructions.push({
-                                op: OPCODES.PUSH_ARG,
-                                arg: i
-                            });
+                        // Push arguments (actual values, not references)
+                        for (let i = 0; i < n.arguments.length; i++) {
+                            const arg = n.arguments[i];
+                            const value = this.evaluateLiteral(arg);
+                            
+                            if (typeof value === 'string') {
+                                // Add string to table and push its offset
+                                addString(value);
+                                instructions.push({
+                                    op: OPCODES.PUSH_STR,
+                                    value: value
+                                });
+                            } else if (typeof value === 'number') {
+                                instructions.push({
+                                    op: OPCODES.PUSH,
+                                    value: value
+                                });
+                            } else if (arg.type === 'Identifier') {
+                                // Variable reference - load from local
+                                instructions.push({
+                                    op: OPCODES.LOAD_LOCAL,
+                                    name: arg.name
+                                });
+                            } else {
+                                // Default to pushing 0
+                                instructions.push({
+                                    op: OPCODES.PUSH,
+                                    value: 0
+                                });
+                            }
                         }
 
                         instructions.push({

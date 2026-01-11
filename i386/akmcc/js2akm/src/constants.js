@@ -133,7 +133,11 @@ const API_FUNCTIONS = {
     // User
     getCurrentUID:  { capability: CAPABILITIES.USER, argCount: 0 },
     getUsername:    { capability: CAPABILITIES.USER, argCount: 1 },
-    checkPermission: { capability: CAPABILITIES.USER, argCount: 2 }
+    checkPermission: { capability: CAPABILITIES.USER, argCount: 2 },
+
+    // Command helpers (for bytecode modules)
+    getArgs:        { capability: CAPABILITIES.COMMAND, argCount: 0 },
+    print:          { capability: CAPABILITIES.LOG, argCount: 1 }
 };
 
 // AKM bytecode opcodes

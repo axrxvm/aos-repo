@@ -1,5 +1,0 @@
-# SHA256 Checksums for sample-app
-# Generated on: 2026-01-10 04:01:34 UTC
-
-cec57deadb783f41dced85240ae8199d1073ebc0d327aa866d7614ec5fc25a2a  app.bin
-732e3c9ecc90cd35d0bbe7bc404c06a9578d3842bf2927b6546adaccaa13491a  config.conf
