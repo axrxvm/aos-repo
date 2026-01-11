@@ -15,8 +15,11 @@ on:
       - 'i386/kmodule/**'
       - 'x86_64/kmodule/**'
 
+permissions:
+  contents: write
+
 jobs:
-  generate-lists:
+  generate-lists: 
     runs-on: ubuntu-latest
     
     steps:
@@ -43,7 +46,7 @@ jobs:
       
       - name: Commit and push changes
         if: steps.verify.outputs.changed == 'true' && github.event_name == 'push'
-        run: |
+        run:  |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "*/kmodule/list.json"
