@@ -1,0 +1,51 @@
+name: Generate kmodule list.json
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'i386/kmodule/**'
+      - 'x86_64/kmodule/**'
+      - '.github/workflows/generate-kmodule-list.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'i386/kmodule/**'
+      - 'x86_64/kmodule/**'
+
+jobs:
+  generate-lists:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Generate kmodule lists
+        run: |
+          node .github/scripts/generate-kmodule-list.js
+      
+      - name: Check for changes
+        id: verify
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        if: steps.verify.outputs.changed == 'true' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "*/kmodule/list.json"
+          git commit -m "chore: regenerate kmodule lists"
+          git push
