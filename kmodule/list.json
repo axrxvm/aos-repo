@@ -1,4 +1,29 @@
 {
-  "generated": null,
-  "modules": []
+  "generated": "2026-02-17T09:04:51.513Z",
+  "modules": [
+    {
+      "folder": "hello",
+      "module": "hello.akm",
+      "sha256": "b9430b477b956ddc22f8a7963567d52e92afb76fd94221bed053a66e5fc2b31e",
+      "metadata": {
+        "name": "hello",
+        "version": "1.0.0",
+        "author": "Aarav Mehta",
+        "description": "Hello World kernel module example",
+        "license": "MIT"
+      }
+    },
+    {
+      "folder": "session_notes",
+      "module": "session-notes.akm",
+      "sha256": "02e93a211cdffb420307b4618ed93f9506b0fdc511f5fc9a5d1a983a00c3ff1d",
+      "metadata": {
+        "name": "session_notes",
+        "version": "1.0.0",
+        "author": "axrxvm",
+        "description": "Quick shell note-taking commands. Demo for akmcc",
+        "license": "MIT"
+      }
+    }
+  ]
 }
