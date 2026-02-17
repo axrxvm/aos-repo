@@ -4,7 +4,7 @@ This directory contains packages, modules, and files for the i386 (32-bit x86) a
 
 ## Structure
 
-- **iso**: ISO images for i386 architecture
+- **iso**: ISO images for i386 architecture can be found at [aOS Source Code](https://github.com/axrxvm/aos/releases)
 - **akmcc**: AOS Kernel Module Compiler Collection packages
 - **kmodule**: Kernel modules for i386
 - **pkgs**: Software packages compiled for i386

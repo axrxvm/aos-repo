@@ -4,7 +4,7 @@ This directory contains packages, modules, and files for the x86_64 (64-bit x86)
 
 ## Structure
 
-- **iso**: ISO images for x86_64 architecture
+- **iso**: ISO images for x86_64 architecture can be found at [aOS Source Code](https://github.com/axrxvm/aos/releases)
 - **akmcc**: AOS Kernel Module Compiler Collection packages
 - **kmodule**: Kernel modules for x86_64
 - **pkgs**: Software packages compiled for x86_64

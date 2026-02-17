@@ -8,6 +8,7 @@ on:
     paths:
       - 'i386/**'
       - 'x86_64/**'
+      - `kmodules/**`
       - '!i386/README.md'
       - '!x86_64/README.md'
       - '!i386/*/README.md'
