@@ -40,6 +40,23 @@ jobs:
           node-version: '18'
 
       # ----------------------------
+      # Ensure kmodule/list.json exists
+      # ----------------------------
+      - name: Ensure kmodule/list.json exists
+        if: inputs.generate_list == true || github.event_name == 'push'
+        run: |
+          mkdir -p kmodule
+          if [ ! -f kmodule/list.json ]; then
+            echo "Creating fresh kmodule/list.json"
+            cat << 'EOF' > kmodule/list.json
+{
+  "generated": null,
+  "modules": []
+}
+EOF
+          fi
+
+      # ----------------------------
       # Generate kmodule list.json
       # ----------------------------
       - name: Generate kmodule list.json
