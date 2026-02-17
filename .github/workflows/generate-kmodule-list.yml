@@ -5,13 +5,14 @@ on:
     branches:
       - main
     paths:
-	- 'kmodule/**'
-      	- '.github/workflows/generate-kmodule-list.yml'
+      - 'kmodule/**'
+      - '.github/workflows/generate-kmodule-list.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'kmodule/**'
+
 
 permissions:
   contents: write
