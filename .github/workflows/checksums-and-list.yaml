@@ -122,4 +122,3 @@ jobs:
           git add **/keys.txt **/keys.json
           git commit -m "Auto-generate SHA256 checksums [skip ci]"
           git push
-
