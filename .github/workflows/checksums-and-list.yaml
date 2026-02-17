@@ -49,13 +49,12 @@ jobs:
           if [ ! -f kmodule/list.json ]; then
             echo "Creating fresh kmodule/list.json"
             cat << 'EOF' > kmodule/list.json
-{
-  "generated": null,
-  "modules": []
-}
-EOF
+          {
+            "generated": null,
+            "modules": []
+          }
+          EOF
           fi
-
       # ----------------------------
       # Generate kmodule list.json
       # ----------------------------
