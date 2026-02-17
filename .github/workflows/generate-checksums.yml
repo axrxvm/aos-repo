@@ -8,15 +8,10 @@ on:
     paths:
       - 'i386/**'
       - 'x86_64/**'
-      - 'kmodules/**'
-      - '!i386/README.md'
-      - '!x86_64/README.md'
-      - '!i386/*/README.md'
-      - '!x86_64/*/README.md'
-      - '!i386/**/keys.txt'
-      - '!x86_64/**/keys.txt'
-      - '!i386/**/keys.json'
-      - '!x86_64/**/keys.json'
+      - 'kmodule/**'
+      - '!**/README.md'
+      - '!**/keys.txt'
+      - '!**/keys.json'
   workflow_dispatch:
 
 jobs:
@@ -24,109 +19,92 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Generate SHA256 checksums
         shell: bash
         run: |
           set -euo pipefail
           echo "Starting checksum generation..."
-          
-          # Function to generate checksums for a directory
+
           generate_checksums() {
             local dir="$1"
             local json_file="${dir}/keys.json"
             local txt_file="${dir}/keys.txt"
-            # Skip if directory doesn't exist
-            if [ ! -d "$dir" ]; then
-              return
-            fi
-            
-            # Get list of files to checksum (excluding README.md, keys.txt, and keys.json)
+
+            [ -d "$dir" ] || return
+
             local file_list
-            file_list=$(find "$dir" -maxdepth 1 -type f ! -name "README.md" ! -name "keys.txt" ! -name "keys.json" | sort)
-            
-            # Skip if no files to checksum
-            if [ -z "$file_list" ]; then
-              echo "Skipping $dir (no files to checksum)"
-              return
-            fi
-            
-            echo "Generating checksums for: $dir"
-            
-            # Remove old checksum files
+            file_list=$(find "$dir" -maxdepth 1 -type f \
+              ! -name "README.md" \
+              ! -name "keys.txt" \
+              ! -name "keys.json" | sort)
+
+            [ -n "$file_list" ] || return
+
             rm -f "$txt_file" "$json_file"
-            
-            # Generate keys.txt (plain text format)
+
             echo "# SHA256 Checksums for $(basename "$dir")" > "$txt_file"
             echo "# Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$txt_file"
-            echo "" >> "$txt_file"
-            
-            # Collect all files and their checksums
+            echo >> "$txt_file"
+
             files=()
             checksums=()
-            
+
             while IFS= read -r file; do
-              if [ -f "$file" ]; then
-                filename=$(basename "$file")
-                checksum=$(sha256sum "$file" | awk '{print $1}')
-                files+=("$filename")
-                checksums+=("$checksum")
-                # Add to keys.txt
-                echo "$checksum  $filename" >> "$txt_file"
-              fi
+              filename=$(basename "$file")
+              checksum=$(sha256sum "$file" | awk '{print $1}')
+              files+=("$filename")
+              checksums+=("$checksum")
+              echo "$checksum  $filename" >> "$txt_file"
             done <<< "$file_list"
-            
-            # Generate keys.json (JSON format)
-            echo "{" > "$json_file"
-            echo "  \"generated\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> "$json_file"
-            echo "  \"directory\": \"$dir\"," >> "$json_file"
-            echo "  \"checksums\": {" >> "$json_file"
-            
-            # Add all checksums to JSON
-            for i in "${!files[@]}"; do
-              if [ $i -eq $((${#files[@]} - 1)) ]; then
-                # Last item, no comma
-                echo "    \"${files[$i]}\": \"${checksums[$i]}\"" >> "$json_file"
-              else
-                # Not last item, add comma
-                echo "    \"${files[$i]}\": \"${checksums[$i]}\"," >> "$json_file"
-              fi
-            done
-            
-            echo "  }" >> "$json_file"
-            echo "}" >> "$json_file"
-            
+
+            {
+              echo "{"
+              echo "  \"generated\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\","
+              echo "  \"directory\": \"$dir\","
+              echo "  \"checksums\": {"
+              for i in "${!files[@]}"; do
+                comma=","
+                [ "$i" -eq $((${#files[@]} - 1)) ] && comma=""
+                echo "    \"${files[$i]}\": \"${checksums[$i]}\"$comma"
+              done
+              echo "  }"
+              echo "}"
+            } > "$json_file"
+
             echo "✓ Checksums generated for $dir"
           }
-          
-          # Process all item directories in both architectures
-          # For categories that should have item subdirectories (not iso)
+
+          echo "Processing architecture directories..."
           for arch in i386 x86_64; do
             for category in akmcc kmodule pkgs etc tmp; do
-              # Find all item directories (subdirectories of category)
               if [ -d "$arch/$category" ]; then
                 for item_dir in "$arch/$category"/*; do
-                  if [ -d "$item_dir" ]; then
-                    generate_checksums "$item_dir"
-                  fi
+                  [ -d "$item_dir" ] && generate_checksums "$item_dir"
                 done
               fi
             done
-            
-            # Special handling for iso category (no subdirectories, files directly in iso/)
+
             if [ -d "$arch/iso" ]; then
               generate_checksums "$arch/iso"
             fi
           done
-          
+
+          echo "Processing kmodule directories..."
+          if [ -d "kmodule" ]; then
+            for item_dir in kmodule/*; do
+              [ -d "$item_dir" ] && generate_checksums "$item_dir"
+            done
+          fi
+
           echo "Checksum generation completed!"
-      
+
       - name: Check for changes
         id: check_changes
         run: |
@@ -135,12 +113,13 @@ jobs:
           else
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Commit and push checksums
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
           git add **/keys.txt **/keys.json
           git commit -m "Auto-generate SHA256 checksums [skip ci]"
           git push
+
