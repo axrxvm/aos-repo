@@ -1,4 +1,4 @@
-name: Generate SHA256 Checksums
+name: Generate kmodule list & SHA256 checksums
 
 on:
   push:
@@ -6,27 +6,52 @@ on:
       - main
       - 'releases/**'
     paths:
+      - 'kmodule/**'
       - 'i386/**'
       - 'x86_64/**'
-      - 'kmodule/**'
-      - '!**/README.md'
-      - '!**/keys.txt'
-      - '!**/keys.json'
+      - '.github/workflows/generate-kmodule-and-checksums.yml'
+
   workflow_dispatch:
+    inputs:
+      generate_list:
+        description: "Generate kmodule/list.json"
+        type: boolean
+        default: true
+      generate_checksums:
+        description: "Generate SHA256 checksums"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
-  generate-checksums:
+  generate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
+      - name: Setup Node.js
+        if: inputs.generate_list == true || github.event_name == 'push'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # ----------------------------
+      # Generate kmodule list.json
+      # ----------------------------
+      - name: Generate kmodule list.json
+        if: inputs.generate_list == true || github.event_name == 'push'
+        run: |
+          node .github/scripts/generate-kmodule-list.js
+
+      # ----------------------------
+      # Generate SHA256 checksums
+      # ----------------------------
       - name: Generate SHA256 checksums
+        if: inputs.generate_checksums == true || github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
@@ -105,20 +130,18 @@ jobs:
 
           echo "Checksum generation completed!"
 
-      - name: Check for changes
-        id: check_changes
+      # ----------------------------
+      # Commit & push (single commit)
+      # ----------------------------
+      - name: Commit and push changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "changes=true" >> $GITHUB_OUTPUT
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add kmodule/list.json **/keys.txt **/keys.json
+            git commit -m "chore: regenerate kmodule list and checksums [skip ci]"
+            git push
           else
-            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit."
           fi
 
-      - name: Commit and push checksums
-        if: steps.check_changes.outputs.changes == 'true'
-        run: |
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          git add **/keys.txt **/keys.json
-          git commit -m "Auto-generate SHA256 checksums [skip ci]"
-          git push
