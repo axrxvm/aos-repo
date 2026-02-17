@@ -115,23 +115,23 @@ function generateKmoduleList(kmodulePath) {
  * Main function to process all kmodule directories
  */
 function main() {
-  const architectures = ['i386', 'x86_64'];
   const repoRoot = path.resolve(__dirname, '../..');
+  const kmodulePath = path.join(repoRoot, 'kmodule');
   
-  for (const arch of architectures) {
-    const kmodulePath = path.join(repoRoot, arch, 'kmodule');
-    
-    if (!fs.existsSync(kmodulePath)) {
-      console.log(`Skipping ${arch}/kmodule: directory not found`);
-      continue;
-    }
-    
-    const list = generateKmoduleList(kmodulePath);
-    const outputPath = path.join(kmodulePath, 'list.json');
-    
-    fs.writeFileSync(outputPath, JSON.stringify(list, null, 2) + '\n');
-    console.log(`Generated ${outputPath} with ${list.modules.length} modules`);
+  // Check if the root kmodule directory exists
+  if (!fs.existsSync(kmodulePath)) {
+    console.log(`Skipping kmodule: directory not found at ${kmodulePath}`);
+    return; 
   }
+  
+  // Generate the list based on the new single location
+  const list = generateKmoduleList(kmodulePath);
+  const outputPath = path.join(kmodulePath, 'list.json');
+  
+  // Write the output
+  fs.writeFileSync(outputPath, JSON.stringify(list, null, 2) + '\n');
+  console.log(`Generated ${outputPath} with ${list.modules.length} modules`);
 }
 
+main();
 main();
